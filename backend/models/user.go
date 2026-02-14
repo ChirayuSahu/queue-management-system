@@ -3,17 +3,17 @@ package models
 import (
 	"time"
 
-	"gorm.io/gorm"
+	"github.com/google/uuid"
 )
 
 type User struct {
-	gorm.Model
+	UserID   uuid.UUID `json:"user_id" gorm:"type:uuid;primaryKey;column:user_id"`
+	Name     string    `json:"name"`
+	Username string    `json:"username" gorm:"uniqueIndex;not null"`
+	Password string    `json:"-"`
+	Email    string    `json:"email" gorm:"uniqueIndex;not null"`
+	IsAdmin  string    `json:"is_admin" gorm:"default:false"`
 
-	Name        string    `json:"name"`
-	Username    string    `json:"username" gorm:"uniqueIndex;not null"`
-	Password    string    `json:"password"`
-	Email       string    `json:"email" gorm:"uniqueIndex;not null"`
-	Phone       string    `json:"phone" gorm:"uniqueIndex"`
-	Token       string    `json:"token"`
-	TokenExpiry time.Time `json:"token_expiry"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
