@@ -6,11 +6,10 @@ import (
 	"github.com/chirayusahu/queue-management-system/backend/common"
 	"github.com/chirayusahu/queue-management-system/backend/config"
 	"github.com/chirayusahu/queue-management-system/backend/database"
-	"github.com/chirayusahu/queue-management-system/backend/models"
+	"github.com/chirayusahu/queue-management-system/backend/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/chirayusahu/queue-management-system/backend/routes"
 )
 
 var app *fiber.App
@@ -24,9 +23,9 @@ func setupApp() *fiber.App {
 
 	database.Connect(cfg.DatabaseUrl)
 
-	database.DB.AutoMigrate(
-		&models.User{},
-	)
+	// database.DB.AutoMigrate(
+	// 	&models.User{},
+	// )
 
 	app.Use(logger.New())
 	app.Use(recover.New())
