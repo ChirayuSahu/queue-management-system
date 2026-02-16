@@ -23,6 +23,8 @@ func Setup() *fiber.App {
 	app.Use(logger.New())
 	app.Use(recover.New())
 
+	routes.V1Routes(app)
+
 	app.All("*", func(c *fiber.Ctx) error {
 		return common.Respond(
 			c,
@@ -32,8 +34,6 @@ func Setup() *fiber.App {
 			nil,
 		)
 	})
-
-	routes.V1Routes(app)
 
 	return app
 }
