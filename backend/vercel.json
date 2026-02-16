@@ -1,7 +1,5 @@
 {
-  "functions": {
-    "api/**/*.go": {
-      "runtime": "go1.22"
-    }
-  }
+  "rewrites": [
+    { "source": "(.*)", "destination": "api/index.go" }
+  ]
 }
