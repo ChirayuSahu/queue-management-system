@@ -14,18 +14,18 @@ const (
 )
 
 type User struct {
-	ID            uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	Name          string
-	Email         string `gorm:"uniqueIndex;not null"`
-	EmailVerified bool   `gorm:"default:false"`
-	PasswordHash  *string
-	AuthProvider  AuthProvider `gorm:"type:varchar(20);not null"`
-	Is2FAEnabled  bool         `gorm:"default:false"`
+	ID            uuid.UUID    `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
+	Name          string       `json:"name"`
+	Email         string       `gorm:"uniqueIndex;not null" json:"email"`
+	EmailVerified bool         `gorm:"default:false" json:"email_verified"`
+	PasswordHash  *string      `gorm:"type:text" json:"-"`
+	AuthProvider  AuthProvider `gorm:"type:varchar(20);not null" json:"auth_provider"`
+	Is2FAEnabled  bool         `gorm:"default:false" json:"is_2fa_enabled"`
 
-	Organizations []OrganizationMember `gorm:"foreignKey:UserID"`
-	QueuesCreated []Queue              `gorm:"foreignKey:CreatedBy"`
-	AuditLogs     []AuditLog           `gorm:"foreignKey:UserID"`
+	Organizations []OrganizationMember `gorm:"foreignKey:UserID" json:"organizations"`
+	QueuesCreated []Queue              `gorm:"foreignKey:CreatedBy" json:"queues_created"`
+	AuditLogs     []AuditLog           `gorm:"foreignKey:UserID" json:"audit_logs"`
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }

@@ -10,6 +10,7 @@ func UserRoutes(router fiber.Router) {
 
 	users.Get("/", GetAllUsers)
 	users.Post("/", CreateUser)
+	users.Post("/login", LoginUser)
 	users.Delete("/:id", DeleteUser)
 
 }

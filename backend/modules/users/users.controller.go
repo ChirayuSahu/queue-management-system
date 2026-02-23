@@ -4,12 +4,14 @@ import (
 	"errors"
 
 	"github.com/chirayusahu/queue-management-system/backend/common"
+	"github.com/chirayusahu/queue-management-system/backend/config"
 	"github.com/chirayusahu/queue-management-system/backend/database"
 	"github.com/chirayusahu/queue-management-system/backend/models"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func CreateUser(c *fiber.Ctx) error {
@@ -45,10 +47,10 @@ func CreateUser(c *fiber.Ctx) error {
 
 	hashedPasswordStr := string(hashedPassword)
 	newUser := models.User{
-		ID:           uuid.New(),
 		Name:         user.Name,
 		Email:        user.Email,
 		PasswordHash: &hashedPasswordStr,
+		AuthProvider: models.ProviderCredentials,
 	}
 
 	if err := database.DB.Create(&newUser).Error; err != nil {
@@ -59,6 +61,7 @@ func CreateUser(c *fiber.Ctx) error {
 }
 
 func GetAllUsers(c *fiber.Ctx) error {
+
 	var users []models.User
 
 	query := database.DB
@@ -80,6 +83,52 @@ func GetAllUsers(c *fiber.Ctx) error {
 	return common.Respond(c, fiber.StatusOK, true, "Users retrieved successfully", users)
 }
 
+func LoginUser(c *fiber.Ctx) error {
+
+	type LoginBody struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	var body LoginBody
+
+	if err := c.BodyParser(&body); err != nil {
+		return common.Respond(c, fiber.StatusBadRequest, false, "Invalid request body", nil)
+	}
+
+	var user models.User
+
+	if err := database.DB.Where("email = ?", body.Email).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return common.Respond(c, fiber.StatusUnauthorized, false, "Invalid email or password", nil)
+		}
+		return common.Respond(c, fiber.StatusInternalServerError, false, "Failed to retrieve user", nil)
+	}
+
+	if user.AuthProvider != models.ProviderCredentials {
+		return common.Respond(c, fiber.StatusUnauthorized, false, "User does not use credentials authentication", nil)
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(*user.PasswordHash), []byte(body.Password)); err != nil {
+		return common.Respond(c, fiber.StatusUnauthorized, false, "Invalid email or password", nil)
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id": user.ID.String(),
+	})
+
+	secretKey := []byte(config.LoadConfig().JWTSecret)
+
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return common.Respond(c, fiber.StatusInternalServerError, false, "Failed to generate token", nil)
+	}
+
+	return common.Respond(c, fiber.StatusOK, true, "Login successful", fiber.Map{
+		"token": tokenString,
+	})
+}
+
 func DeleteUser(c *fiber.Ctx) error {
 
 	id := c.Params("id")
@@ -87,7 +136,7 @@ func DeleteUser(c *fiber.Ctx) error {
 
 	var user models.User
 
-	if err := query.Where("user_id = ?", id).First(&user).Error; err != nil {
+	if err := query.Where("id = ?", id).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return common.Respond(c, fiber.StatusNotFound, false, "User not found", nil)
 		}
