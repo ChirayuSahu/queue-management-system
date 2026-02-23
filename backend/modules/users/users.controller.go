@@ -12,13 +12,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserBody struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func CreateUser(c *fiber.Ctx) error {
+
+	type UserBody struct {
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
 	var user UserBody
 
 	if err := c.BodyParser(&user); err != nil {
@@ -26,10 +27,13 @@ func CreateUser(c *fiber.Ctx) error {
 	}
 
 	var existingUser models.User
+
 	err := database.DB.Where("email = ?", user.Email).First(&existingUser).Error
+
 	if err == nil {
 		return common.Respond(c, fiber.StatusConflict, false, "User with this email already exists", nil)
 	}
+
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return common.Respond(c, fiber.StatusInternalServerError, false, err.Error(), nil)
 	}
@@ -39,11 +43,12 @@ func CreateUser(c *fiber.Ctx) error {
 		return common.Respond(c, fiber.StatusInternalServerError, false, "Failed to hash password", nil)
 	}
 
+	hashedPasswordStr := string(hashedPassword)
 	newUser := models.User{
-		UserID:   uuid.New(),
-		Name:     user.Name,
-		Email:    user.Email,
-		Password: string(hashedPassword),
+		ID:           uuid.New(),
+		Name:         user.Name,
+		Email:        user.Email,
+		PasswordHash: &hashedPasswordStr,
 	}
 
 	if err := database.DB.Create(&newUser).Error; err != nil {

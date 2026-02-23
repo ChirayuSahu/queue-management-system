@@ -6,13 +6,25 @@ import (
 	"github.com/google/uuid"
 )
 
+type AuthProvider string
+
+const (
+	ProviderGoogle      AuthProvider = "GOOGLE"
+	ProviderCredentials AuthProvider = "CREDENTIALS"
+)
+
 type User struct {
-	UserID   uuid.UUID `json:"user_id" gorm:"type:uuid;primaryKey;column:user_id"`
-	Name     string    `json:"name"`
-	Username string    `json:"username" gorm:"uniqueIndex;not null"`
-	Password string    `json:"-"`
-	Email    string    `json:"email" gorm:"uniqueIndex;not null"`
-	IsAdmin  string    `json:"is_admin" gorm:"default:false"`
+	ID            uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	Name          string
+	Email         string `gorm:"uniqueIndex;not null"`
+	EmailVerified bool   `gorm:"default:false"`
+	PasswordHash  *string
+	AuthProvider  AuthProvider `gorm:"type:varchar(20);not null"`
+	Is2FAEnabled  bool         `gorm:"default:false"`
+
+	Organizations []OrganizationMember `gorm:"foreignKey:UserID"`
+	QueuesCreated []Queue              `gorm:"foreignKey:CreatedBy"`
+	AuditLogs     []AuditLog           `gorm:"foreignKey:UserID"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

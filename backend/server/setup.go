@@ -8,6 +8,7 @@ import (
 	"github.com/chirayusahu/queue-management-system/backend/common"
 	"github.com/chirayusahu/queue-management-system/backend/config"
 	"github.com/chirayusahu/queue-management-system/backend/database"
+	"github.com/chirayusahu/queue-management-system/backend/models"
 	"github.com/chirayusahu/queue-management-system/backend/routes"
 )
 
@@ -19,6 +20,15 @@ func Setup() *fiber.App {
 	})
 
 	database.Connect(cfg.DatabaseUrl)
+	database.DB.AutoMigrate(
+		&models.Organization{},
+		&models.User{},
+		&models.Location{},
+		&models.Queue{},
+		&models.QueueEntry{},
+		&models.TwoFactorToken{},
+		&models.AuditLog{},
+	)
 
 	app.Use(logger.New())
 	app.Use(recover.New())
