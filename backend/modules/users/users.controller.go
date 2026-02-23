@@ -2,6 +2,7 @@ package users
 
 import (
 	"errors"
+	"time"
 
 	"github.com/chirayusahu/queue-management-system/backend/common"
 	"github.com/chirayusahu/queue-management-system/backend/config"
@@ -114,7 +115,8 @@ func LoginUser(c *fiber.Ctx) error {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id": user.ID.String(),
+		"id":  user.ID.String(),
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	secretKey := []byte(config.LoadConfig().JWTSecret)
