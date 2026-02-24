@@ -13,6 +13,15 @@ const (
 	ProviderCredentials AuthProvider = "CREDENTIALS"
 )
 
+type UserType string
+
+const (
+	UserTypeUser       UserType = "USER"
+	UserTypeAdmin      UserType = "ADMIN"
+	UserTypeOwner      UserType = "OWNER"
+	UserTypeSuperAdmin UserType = "SUPER_ADMIN"
+)
+
 type User struct {
 	ID            uuid.UUID    `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
 	Name          string       `json:"name"`
@@ -21,6 +30,7 @@ type User struct {
 	PasswordHash  *string      `gorm:"type:text" json:"-"`
 	AuthProvider  AuthProvider `gorm:"type:varchar(20);not null" json:"auth_provider"`
 	Is2FAEnabled  bool         `gorm:"default:false" json:"is_2fa_enabled"`
+	Type          UserType     `gorm:"type:user_type;default:'USER'" json:"type"`
 
 	Organizations []OrganizationMember `gorm:"foreignKey:UserID" json:"organizations"`
 	QueuesCreated []Queue              `gorm:"foreignKey:CreatedBy" json:"queues_created"`
