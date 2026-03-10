@@ -11,6 +11,7 @@ type Config struct {
 	AppName     string
 	Env         string
 	DatabaseUrl string
+	JWTSecret   string
 }
 
 func LoadConfig() Config {
@@ -21,6 +22,7 @@ func LoadConfig() Config {
 		AppName:     getEnv("APP_NAME", "LineUp"),
 		Env:         getEnv("ENV", "development"),
 		DatabaseUrl: getEnv("DATABASE_URL", ""),
+		JWTSecret:   getEnv("JWT_SECRET_KEY", ""),
 	}
 }
 

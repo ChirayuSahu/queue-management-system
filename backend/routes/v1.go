@@ -2,6 +2,8 @@ package routes
 
 import (
 	"github.com/chirayusahu/queue-management-system/backend/common"
+	"github.com/chirayusahu/queue-management-system/backend/modules/organization"
+	"github.com/chirayusahu/queue-management-system/backend/modules/queues"
 	"github.com/chirayusahu/queue-management-system/backend/modules/users"
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,5 +17,7 @@ func V1Routes(app *fiber.App) {
 	})
 
 	users.UserRoutes(api)
+	queues.QueueRoutes(api)
+	organization.OrganizationRoutes(api)
 
 }

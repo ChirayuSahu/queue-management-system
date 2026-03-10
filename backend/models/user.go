@@ -6,14 +6,36 @@ import (
 	"github.com/google/uuid"
 )
 
-type User struct {
-	UserID   uuid.UUID `json:"user_id" gorm:"type:uuid;primaryKey;column:user_id"`
-	Name     string    `json:"name"`
-	Username string    `json:"username" gorm:"uniqueIndex;not null"`
-	Password string    `json:"-"`
-	Email    string    `json:"email" gorm:"uniqueIndex;not null"`
-	IsAdmin  string    `json:"is_admin" gorm:"default:false"`
+type AuthProvider string
 
-	CreatedAt time.Time
-	UpdatedAt time.Time
+const (
+	ProviderGoogle      AuthProvider = "GOOGLE"
+	ProviderCredentials AuthProvider = "CREDENTIALS"
+)
+
+type UserType string
+
+const (
+	UserTypeUser       UserType = "USER"
+	UserTypeAdmin      UserType = "ADMIN"
+	UserTypeOwner      UserType = "OWNER"
+	UserTypeSuperAdmin UserType = "SUPER_ADMIN"
+)
+
+type User struct {
+	ID            uuid.UUID    `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
+	Name          string       `json:"name"`
+	Email         string       `gorm:"uniqueIndex;not null" json:"email"`
+	EmailVerified bool         `gorm:"default:false" json:"email_verified"`
+	PasswordHash  *string      `gorm:"type:text" json:"-"`
+	AuthProvider  AuthProvider `gorm:"type:varchar(20);not null" json:"auth_provider"`
+	Is2FAEnabled  bool         `gorm:"default:false" json:"is_2fa_enabled"`
+	Type          UserType     `gorm:"type:user_type;default:'USER'" json:"type"`
+
+	Organizations []OrganizationMember `gorm:"foreignKey:UserID" json:"organizations"`
+	QueuesCreated []Queue              `gorm:"foreignKey:CreatedBy" json:"queues_created"`
+	AuditLogs     []AuditLog           `gorm:"foreignKey:UserID" json:"audit_logs"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
